@@ -1,30 +1,30 @@
 "use client";
 
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import React, {useCallback, useEffect, useMemo, useState} from "react";
+import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
+import {Input} from "@/components/ui/input";
+import {Label} from "@/components/ui/label";
+import {Separator} from "@/components/ui/separator";
+import {Alert, AlertDescription} from "@/components/ui/alert";
 
 // Icons
 import {
-  LuPlay,
-  LuPause,
-  LuRefreshCw,
-  LuSettings,
   LuActivity,
   LuChartBar,
-  LuZap,
+  LuFlaskConical,
+  LuFolderOpen,
   LuInfo,
+  LuList,
+  LuPause,
+  LuPlay,
+  LuRefreshCw,
+  LuSave,
+  LuSettings,
   LuTriangleAlert,
   LuX,
-  LuFlaskConical,
-  LuList,
-  LuSave,
-  LuFolderOpen,
+  LuZap,
 } from "react-icons/lu";
 
 
@@ -35,15 +35,13 @@ import SimulationControls from "@/components/SimulationControls";
 import VirtualizedBacteriaList from "@/components/VirtualizedBacteriaList";
 import SaveSimulationModal from "@/components/SaveSimulationModal";
 import LoadSimulationModal from "@/components/LoadSimulationModal";
-import { ErrorBoundary } from "@/components/ErrorBoundary";
-import {
-  ConnectionStatusCompact,
-} from "@/components/ConnectionStatus";
-import { useSimulationContext } from "@/context/SimulationContext";
-import { Bacterium, SimulationParametersInput, Simulation } from "@/types/simulation";
-import { simulationApiSimple } from "@/lib/api_new";
+import {ErrorBoundary} from "@/components/ErrorBoundary";
+import {ConnectionStatusCompact,} from "@/components/ConnectionStatus";
+import {useSimulationContext} from "@/context/SimulationContext";
+import {Bacterium, Simulation, SimulationParametersInput} from "@/types/simulation";
+import {simulationApiSimple} from "@/lib/api_new";
 import Image from "next/image";
-import { BacteriaLegend } from "@/components/BacteriaLegend";
+import {BacteriaLegend} from "@/components/BacteriaLegend";
 
 // Move colors outside component to prevent recreation on every render
 const colors = {
@@ -75,26 +73,19 @@ const colors = {
 };
 
 // Init
-const response = await simulationApiSimple.getSimulation('684438c3f08c530097664fa8');
-let id = '684438c3f08c530097664fa8';
+let id = '';
+
+// Petty fix, hate Typescript so much
+interface ApiResponse {
+  simulation: Simulation
+}
 // Generate sample bacteria function moved outside to prevent recreation
-const generateSampleBacteria = (response : Simulation): Bacterium[] => {
+const generateSampleBacteria = (response : ApiResponse): Bacterium[] => {
   const sampleBacteria: Bacterium[] = [];
-  // const centerX = 300;
-  // const centerY = 300;
-  // const maxRadius = 250;
   const bacteriaObj = response.simulation.currentState.bacteria;
   console.log('Halo:', bacteriaObj);
   for (let i = 0; i < bacteriaObj.length; i++) {
-    const currentBacterium = bacteriaObj[i];
-    // const id = currentBacterium.id;
-    // // const angle = Math.random() * 2 * Math.PI;
-    // // const radius = Math.random() * maxRadius;
-    // const x = currentBacterium.x;
-    // const y = currentBacterium.y;
-    // const isResistant = currentBacterium.isResistant;
-
-    const bacterium: Bacterium = currentBacterium;
+    const bacterium: Bacterium = bacteriaObj[i];
 
     sampleBacteria.push(bacterium);
   }
@@ -111,8 +102,7 @@ export default function Dashboard() {
     isSimulationRunning,
     error,
     isConnected,
-    createSimulation,
-    startSimulation,
+    // startSimulation,
     stopSimulation,
     resetSimulation,
     clearError,
@@ -129,11 +119,11 @@ export default function Dashboard() {
   const [showLoadModal, setShowLoadModal] = useState(false);
   const [savedSimulations, setSavedSimulations] = useState<Simulation[]>([]);
   const [savingSimulation, setSavingSimulation] = useState(false);
-  const [simulation, setSimulation] = useState<Simulation>(undefined);
+  const [simulation, setSimulation] = useState<Simulation | null>(null);
   // Initialize sample data on mount
-  useEffect(() => {
-    setSampleBacteria(generateSampleBacteria(response));
-  }, []);
+  // useEffect(() => {
+  //   setSampleBacteria(generateSampleBacteria(0));
+  // }, []);
 
   // Load saved simulations when load modal opens
   useEffect(() => {
@@ -156,7 +146,7 @@ export default function Dashboard() {
     async (parameters: SimulationParametersInput) => {
       try {
         console.log(id);
-        const response = await simulationApiSimple.createSimulation(simulationName, parameters);
+        const response = await simulationApiSimple.createSimulation(simulationName, parameters) as unknown as ApiResponse;
         console.log("Ini dari memoized itu lho: ", response);
         id = response.simulation.id;
         // Update petri dish
@@ -167,7 +157,7 @@ export default function Dashboard() {
         console.error("Failed to create simulation:", err);
       }
     },
-    [createSimulation, simulationName]
+    [simulationName]
   );
 
   const handlePlayPause = useCallback(async () => {
@@ -187,7 +177,7 @@ export default function Dashboard() {
     } catch (err) {
       console.error("Failed to toggle simulation:", err);
     }
-  }, [isSimulationRunning, simulation, startSimulation, stopSimulation]);
+  }, [isSimulationRunning, simulation, stopSimulation]);
 
   const handleReset = useCallback(async () => {
     try {
@@ -195,7 +185,7 @@ export default function Dashboard() {
         await resetSimulation();
       } else {
         // If no simulation exists, just regenerate sample bacteria
-        setSampleBacteria(generateSampleBacteria(response));
+        // setSampleBacteria(generateSampleBacteria(response));
       }
     } catch (err) {
       console.error("Failed to reset simulation:", err);

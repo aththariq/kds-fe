@@ -103,10 +103,10 @@ const SimulationControls = memo<SimulationControlsProps>(function SimulationCont
   const handleSpeedChange = useCallback(async (value: number[]) => {
     const newSpeed = value[0];
     setSimulationSpeed(value);
-    
+
     // Store in localStorage for persistence
     localStorage.setItem("bacteria-simulation-speed", JSON.stringify(newSpeed));
-    
+
     // Update backend if simulation exists
     if (simulation?.id) {
       try {
@@ -163,16 +163,21 @@ const SimulationControls = memo<SimulationControlsProps>(function SimulationCont
 
     // Use simulation speed if available, otherwise use saved/default
     const currentSpeed = simulation?.currentState?.simulationSpeed;
-    if (currentSpeed && currentSpeed !== simulationSpeed[0]) {
-      setSimulationSpeed([currentSpeed]);
-    } else if (savedSpeed && !currentSpeed) {
+    if (currentSpeed) {
+      setSimulationSpeed(prevSpeed => {
+        if (prevSpeed[0] != currentSpeed) {
+          return [currentSpeed];
+        }
+        return prevSpeed;
+      });
+    } else if (savedSpeed) {
       setSimulationSpeed([JSON.parse(savedSpeed)]);
     }
-    
+
     if (savedAutoSave) {
       setAutoSaveEnabled(JSON.parse(savedAutoSave));
     }
-  }, [simulation?.currentState?.simulationSpeed, simulationSpeed]);
+  }, [simulation?.currentState?.simulationSpeed]);
 
   // Track elapsed time
   useEffect(() => {
@@ -401,7 +406,7 @@ const SimulationControls = memo<SimulationControlsProps>(function SimulationCont
                     {simulationSpeed[0]}x
                   </span>
                 </div>
-                <div 
+                <div
                   className="relative p-1 rounded-lg border"
                   style={{
                     backgroundColor: `${colors.surface.a20}40`,
