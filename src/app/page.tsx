@@ -104,7 +104,7 @@ export default function Dashboard() {
     isConnected,
     // startSimulation,
     stopSimulation,
-    resetSimulation,
+    // resetSimulation,
     clearError,
     checkConnection,
     loadSimulation,
@@ -180,17 +180,9 @@ export default function Dashboard() {
   }, [isSimulationRunning, simulation, stopSimulation]);
 
   const handleReset = useCallback(async () => {
-    try {
-      if (simulation) {
-        await resetSimulation();
-      } else {
-        // If no simulation exists, just regenerate sample bacteria
-        // setSampleBacteria(generateSampleBacteria(response));
-      }
-    } catch (err) {
-      console.error("Failed to reset simulation:", err);
-    }
-  }, [simulation, resetSimulation]);
+    setSimulation(null);
+    setSampleBacteria([]);
+    }, [setSimulation, setSampleBacteria]);
 
   const handleSimulationNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSimulationName(e.target.value);
