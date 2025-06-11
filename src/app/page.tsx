@@ -80,19 +80,28 @@ interface ApiResponse {
   simulation: Simulation
 }
 // Generate sample bacteria function moved outside to prevent recreation
-const generateSampleBacteria = (response : ApiResponse): Bacterium[] => {
+const generateSampleBacteria = (response: ApiResponse): Bacterium[] => {
   const sampleBacteria: Bacterium[] = [];
   const bacteriaObj = response.simulation.currentState.bacteria;
+  const seenIds = new Set<string>();
+
   console.log('Halo:', bacteriaObj);
+
   for (let i = 0; i < bacteriaObj.length; i++) {
     const bacterium: Bacterium = bacteriaObj[i];
 
+    if (seenIds.has(bacterium.id)) {
+      console.warn(`Duplicate bacterium found with id: ${bacterium.id}`);
+      continue; // Skip duplicate
+    }
+
+    seenIds.add(bacterium.id);
     sampleBacteria.push(bacterium);
   }
+
   console.log(sampleBacteria);
   return sampleBacteria;
 };
-
 export default function Dashboard() {
   // Use the simulation context instead of the direct hook
   const {
@@ -141,18 +150,66 @@ export default function Dashboard() {
     }
   }, [showLoadModal]);
 
+  const stepHandler = async () => {
+    const id = localStorage.getItem('id');
+    if (id) {
+      try {
+        // Clear the bacteria first to force complete re-render
+        setSampleBacteria([]);
+
+        const storedSpeed = localStorage.getItem('bacteria-simulation-speed');
+        const simulationSpeed = storedSpeed ? parseFloat(storedSpeed) : 1;
+        let stepsToExecute = Math.floor(simulationSpeed);
+
+        if (stepsToExecute === 10) {
+          const duration = localStorage.getItem('simulation-duration');
+          const targetGeneration = duration ? parseInt(duration) : 1;
+          const currentGeneration = simulation?.currentState?.generation || 0;
+
+          console.log("Target duration:", targetGeneration);
+          console.log("Current generation:", currentGeneration);
+
+          // Only execute remaining steps needed to reach target
+          stepsToExecute = Math.max(0, targetGeneration - currentGeneration);
+          console.log("Steps to execute:", stepsToExecute);
+        }
+
+        for (let i = 0; i < stepsToExecute; i++) {
+          setSimulation((await simulationApiSimple.stepSimulation(id) as unknown as ApiResponse).simulation);
+        }
+        // console.log(response);
+
+        const updateSimulation = await simulationApiSimple.getSimulation(id) as unknown as ApiResponse;
+
+        // Add a small delay to ensure state is cleared
+        setTimeout(() => {
+          setSampleBacteria(generateSampleBacteria(updateSimulation));
+          setSimulation(updateSimulation.simulation);
+        }, 10);
+
+      } catch (error) {
+        console.error('Error in stepHandler:', error);
+      }
+    }
+  }
+
   // Memoized event handlers
   const handleSimulationSubmit = useCallback(
     async (parameters: SimulationParametersInput) => {
       try {
         console.log(id);
+        localStorage.setItem("simulation-duration", String(parameters.duration));
         const response = await simulationApiSimple.createSimulation(simulationName, parameters) as unknown as ApiResponse;
         console.log("Ini dari memoized itu lho: ", response);
         id = response.simulation.id;
         // Update petri dish
         setSampleBacteria(generateSampleBacteria(response));
         setSimulation(response.simulation);
-        console.log(id);
+        console.log("New id : ",id);
+
+        if (id) {
+          localStorage.setItem("id", id);
+        }
       } catch (err) {
         console.error("Failed to create simulation:", err);
       }
@@ -742,6 +799,8 @@ export default function Dashboard() {
                 <SimulationControls
                   showKeyboardShortcuts={true}
                   showAdvancedControls={true}
+                  onStepClick={stepHandler}
+
                 />
 
                 {/* Parameters Only */}

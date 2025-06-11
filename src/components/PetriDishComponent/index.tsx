@@ -25,23 +25,23 @@ const BacteriumTooltip: React.FC<TooltipProps> = ({ bacterium, x, y }) => {
   // Calculate offset in pixels (approximately 1cm = 37.8px at 96 DPI)
   const offsetX = 38; // ~1cm to the right
   const offsetY = -38; // ~1cm above
-  
+
   // Calculate final position - purely relative to cursor
   const finalX = x + offsetX;
   const finalY = y + offsetY;
-  
+
   // Check boundaries and adjust if needed
   const tooltipWidth = 180;
 
-  
+
   let adjustedX = finalX;
   let adjustedY = finalY;
-  
+
   // Prevent tooltip from going off-screen
   if (finalX + tooltipWidth > window.innerWidth) {
     adjustedX = x - offsetX - tooltipWidth; // Show to the left instead
   }
-  
+
   if (finalY < 0) {
     adjustedY = y + offsetX; // Show below instead
   }
@@ -66,9 +66,9 @@ const BacteriumTooltip: React.FC<TooltipProps> = ({ bacterium, x, y }) => {
         fontFamily: 'monospace'
       }}
     >
-      <div style={{ 
-        fontWeight: 'bold', 
-        marginBottom: '4px', 
+      <div style={{
+        fontWeight: 'bold',
+        marginBottom: '4px',
         color: bacterium.isResistant ? '#ff6666' : '#66ff66',
         fontSize: '12px'
       }}>
@@ -107,9 +107,9 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
 
   const [mounted, setMounted] = useState(false);
   // const [hoveredNode, setHoveredNode] = useState<GraphNode | null>(null); // Adapt hover logic
-  const [containerSize, setContainerSize] = useState({ 
-    width: width || 600, 
-    height: height || 600 
+  const [containerSize, setContainerSize] = useState({
+    width: width || 600,
+    height: height || 600
   });
   // const [performanceMetrics, setPerformanceMetrics] = useState({ // Performance metrics will be different
   //   frameRate: 60,
@@ -130,7 +130,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
 
   useEffect(() => {
     setMounted(true);
-    
+
     // Global mouse tracking for more accurate positioning
     const handleGlobalMouseMove = (e: MouseEvent) => {
       setMousePosition({
@@ -141,7 +141,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
 
     // Add global mouse listener
     window.addEventListener('mousemove', handleGlobalMouseMove);
-    
+
     return () => {
       window.removeEventListener('mousemove', handleGlobalMouseMove);
     };
@@ -153,7 +153,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
       const rect = containerRef.current.getBoundingClientRect();
       const newWidth = width || rect.width || 600;
       const newHeight = height || rect.height || 600;
-      
+
       setContainerSize(prev => {
         if (Math.abs(prev.width - newWidth) > 10 || Math.abs(prev.height - newHeight) > 10) {
           return { width: newWidth, height: newHeight };
@@ -205,7 +205,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
     // Create nodes with stable IDs
     const nodes = displayBacteria.map(b => ({
       id: b.id,
-      label: b.isResistant ? `R-${b.id.substring(0,3)}` : `S-${b.id.substring(0,3)}`, 
+      label: b.isResistant ? `R-${b.id.substring(0,3)}` : `S-${b.id.substring(0,3)}`,
       color: {
         background: b.color,
         border: b.isResistant ? '#8B0000' : '#2E8B57',
@@ -216,7 +216,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
       },
       value: Math.max(b.size * 2, 8), // Ensure minimum visible size
       shape: b.isResistant ? 'star' : 'dot',
-      originalData: b, 
+      originalData: b,
       font: {
         size: 8,
         color: b.isResistant ? '#FFFFFF' : '#000000'
@@ -340,7 +340,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
       hoverConnectedEdges: true,
     },
     layout: {
-      improvedLayout: true,
+      improvedLayout: false,
       randomSeed: 42, // Consistent layout
     }
   };
@@ -370,7 +370,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
       event.event.preventDefault();
     }
   };
-  
+
   // The useForceConfiguration hook is no longer needed with react-graph-vis
   // const forceConfigHook = useForceConfiguration(
   //    forceGraphRef,
@@ -399,8 +399,8 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
   }
 
   return (
-    <div 
-      ref={containerRef} 
+    <div
+      ref={containerRef}
       style={{
         width: '100%',
         height: '100%',
@@ -430,18 +430,18 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
           zIndex: 10
         }}
       />
-      
+
       {cullingStats && (
-        <div style={{ 
-          position: 'absolute', 
-          top: 10, 
-          left: 10, 
-          background: 'rgba(0,0,0,0.8)', 
-          color: 'white', 
-          padding: '6px 10px', 
-          fontSize: '11px', 
-          borderRadius: '6px', 
-          zIndex: 15, 
+        <div style={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          background: 'rgba(0,0,0,0.8)',
+          color: 'white',
+          padding: '6px 10px',
+          fontSize: '11px',
+          borderRadius: '6px',
+          zIndex: 15,
           pointerEvents: 'none',
           backdropFilter: 'blur(4px)'
         }}>
@@ -449,25 +449,25 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
           <div><strong>Culled:</strong> {(cullingStats.cullingRatio * 100).toFixed(1)}%</div>
         </div>
       )}
-      
+
       {/* Hover instruction overlay */}
-      <div style={{ 
-        position: 'absolute', 
-        bottom: 10, 
-        right: 10, 
-        background: 'rgba(0,0,0,0.7)', 
-        color: 'white', 
-        padding: '6px 10px', 
-        fontSize: '11px', 
-        borderRadius: '6px', 
-        zIndex: 15, 
+      <div style={{
+        position: 'absolute',
+        bottom: 10,
+        right: 10,
+        background: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '6px 10px',
+        fontSize: '11px',
+        borderRadius: '6px',
+        zIndex: 15,
         pointerEvents: 'none',
         backdropFilter: 'blur(4px)'
       }}>
         <div><strong>💡 Hover over bacteria for details</strong></div>
         <div>🖱️ Click to select • 🔍 Scroll to zoom</div>
       </div>
-      
+
       {/* Custom Tooltip Component */}
       {hoveredBacterium && mounted && (
         ReactDOM.createPortal(
@@ -481,7 +481,7 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
           document.body
         )
       )}
-      
+
       {/* Graph component wrapper - simplified */}
       <div
         style={{
@@ -501,8 +501,8 @@ const PetriDish = memo<PetriDishProps>(function PetriDish({
           getNetwork={(networkInstance: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
             networkRef.current = networkInstance;
           }}
-          style={{ 
-            width: '100%', 
+          style={{
+            width: '100%',
             height: '100%',
             // overflow: 'hidden', // Removed
             // position: 'absolute' // Removed, Graph should fill its direct parent

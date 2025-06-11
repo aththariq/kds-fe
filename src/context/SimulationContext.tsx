@@ -82,20 +82,20 @@ export const SimulationProvider: React.FC<SimulationProviderProps> = ({
 // Custom hook to access the simulation context
 export const useSimulationContext = (): SimulationContextType => {
   const context = useContext(SimulationContext);
-  
+
   if (context === undefined) {
     throw new Error(
       "useSimulationContext must be used within a SimulationProvider"
     );
   }
-  
+
   return context;
 };
 
 // Helper hook for simulation status only (for components that only need status)
 export const useSimulationStatus = () => {
   const { simulation, isLoading, isSimulationRunning, error, isConnected } = useSimulationContext();
-  
+
   return {
     simulation,
     isLoading,
@@ -112,12 +112,12 @@ export const useSimulationStatus = () => {
 // Helper hook for bacteria data only (for visualization components)
 export const useBacteriaData = () => {
   const { bacteria } = useSimulationContext();
-  
+
   return useMemo(() => {
     const resistantCount = bacteria.filter(b => b.isResistant).length;
     const sensitiveCount = bacteria.length - resistantCount;
     const resistanceRatio = bacteria.length > 0 ? resistantCount / bacteria.length : 0;
-    
+
     return {
       bacteria,
       totalCount: bacteria.length,
@@ -125,8 +125,8 @@ export const useBacteriaData = () => {
       sensitiveCount,
       resistanceRatio,
       resistancePercentage: resistanceRatio * 100,
-      averageFitness: bacteria.length > 0 
-        ? bacteria.reduce((sum, b) => sum + (b.fitness || 0), 0) / bacteria.length 
+      averageFitness: bacteria.length > 0
+        ? bacteria.reduce((sum, b) => sum + (b.fitness || 0), 0) / bacteria.length
         : 0,
       averageAge: bacteria.length > 0
         ? bacteria.reduce((sum, b) => sum + (b.age || 0), 0) / bacteria.length
@@ -149,7 +149,7 @@ export const useSimulationControls = () => {
     isSimulationRunning,
     simulation,
   } = useSimulationContext();
-  
+
   return {
     // Actions
     createSimulation,
@@ -159,7 +159,7 @@ export const useSimulationControls = () => {
     resetSimulation,
     updateParameters,
     clearError,
-    
+
     // State for controls
     isLoading,
     isSimulationRunning,
@@ -174,7 +174,7 @@ export const useSimulationControls = () => {
 // Helper hook for error handling
 export const useSimulationErrors = () => {
   const { error, isConnected, clearError, checkConnection } = useSimulationContext();
-  
+
   return {
     error,
     hasError: !!error,
@@ -183,11 +183,11 @@ export const useSimulationErrors = () => {
     clearError,
     checkConnection,
     // Error categories
-    errorType: error 
+    errorType: error
       ? (!isConnected ? 'network' : 'simulation')
       : null,
   };
 };
 
 // Export the context for advanced use cases
-export { SimulationContext }; 
+export { SimulationContext };

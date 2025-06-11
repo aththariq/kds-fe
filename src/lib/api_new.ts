@@ -221,7 +221,7 @@ export const simulationApiSimple = {
     // Reset a simulation
     async resetSimulation(id: string, signal?: AbortSignal): Promise<Simulation> {
         return retryRequest(() =>
-            api.post<Simulation>(`/simulations/${id}/reset`, {}, { signal })
+            api.put<Simulation>(`/simulations/${id}/reset`, {}, { signal })
         );
     },
 
@@ -235,7 +235,7 @@ export const simulationApiSimple = {
     // Step simulation forward (for manual control)
     async stepSimulation(id: string, signal?: AbortSignal): Promise<Simulation> {
         return retryRequest(() =>
-            api.post<Simulation>(`/simulations/${id}/step`, {}, { signal })
+            api.put<Simulation>(`/simulations/${id}/step`, {}, { signal })
         );
     },
 
