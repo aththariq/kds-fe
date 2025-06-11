@@ -9,14 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { simulationApiSimple, getErrorMessage } from "@/lib/api";
+import { simulationApiSimple, getErrorMessage } from "@/lib/api_new";
 import { Simulation } from "@/types/simulation";
 import ExportProgressDialog, { ExportProgressController } from "@/components/ExportProgressDialog";
-import { 
-  exportSimulationJSON, 
-  exportSimulationCSV, 
-  exportSimulationsBatch, 
-  ExportFormat 
+import {
+  exportSimulationJSON,
+  exportSimulationCSV,
+  exportSimulationsBatch,
+  ExportFormat
 } from "@/lib/exportUtils";
 
 interface SimulationHistoryProps {
@@ -38,7 +38,7 @@ export default function SimulationHistory({
   const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<"date" | "name">("date");
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [totalSimulations, setTotalSimulations] = useState(0);
@@ -59,22 +59,22 @@ export default function SimulationHistory({
     try {
       setLoading(true);
       setError(null);
-      
+
       // For now, using the simple API - we'll enhance it later to support pagination/filtering
       const allSimulations = await simulationApiSimple.getSimulations();
-      
+
       // Apply client-side filtering and sorting until we enhance the API
       const filteredSimulations = allSimulations.filter(sim => {
         // Search filter
-        const matchesSearch = searchTerm === "" || 
+        const matchesSearch = searchTerm === "" ||
           sim.name.toLowerCase().includes(searchTerm.toLowerCase());
-        
+
         // Status filter
-        const matchesStatus = statusFilter === "all" || 
+        const matchesStatus = statusFilter === "all" ||
           (statusFilter === "running" && sim.currentState.isRunning) ||
           (statusFilter === "paused" && sim.currentState.isPaused) ||
           (statusFilter === "completed" && !sim.currentState.isRunning && !sim.currentState.isPaused);
-        
+
         return matchesSearch && matchesStatus;
       });
 
@@ -94,10 +94,10 @@ export default function SimulationHistory({
       const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
       const endIndex = startIndex + ITEMS_PER_PAGE;
       const paginatedSimulations = filteredSimulations.slice(startIndex, endIndex);
-      
+
       setSimulations(paginatedSimulations);
       setTotalSimulations(filteredSimulations.length);
-      
+
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -152,7 +152,7 @@ export default function SimulationHistory({
     if (!exportControllerRef.current) return;
 
     setShowExportDialog(true);
-    
+
     try {
       if (format === "json") {
         await exportControllerRef.current.startExport(async (onProgress) => {
@@ -183,7 +183,7 @@ export default function SimulationHistory({
     if (selectedSimulations.length === 0) return;
 
     setShowExportDialog(true);
-    
+
     try {
       await exportControllerRef.current.startExport(async (onProgress) => {
         await exportSimulationsBatch(selectedSimulations, format, {
@@ -236,22 +236,22 @@ export default function SimulationHistory({
     if (!stats.resistantCount.length || !stats.totalPopulation.length) {
       return { percentage: 0, trend: "stable" };
     }
-    
+
     const latest = stats.resistantCount[stats.resistantCount.length - 1];
     const total = stats.totalPopulation[stats.totalPopulation.length - 1];
     const percentage = total > 0 ? (latest / total) * 100 : 0;
-    
+
     // Determine trend (simplified)
     let trend = "stable";
     if (stats.resistantCount.length > 1) {
       const previous = stats.resistantCount[stats.resistantCount.length - 2];
       const prevTotal = stats.totalPopulation[stats.totalPopulation.length - 2];
       const prevPercentage = prevTotal > 0 ? (previous / prevTotal) * 100 : 0;
-      
+
       if (percentage > prevPercentage + 1) trend = "increasing";
       else if (percentage < prevPercentage - 1) trend = "decreasing";
     }
-    
+
     return { percentage, trend };
   }, []);
 
@@ -269,7 +269,7 @@ export default function SimulationHistory({
             {`${totalSimulations} simulation${totalSimulations !== 1 ? 's' : ''} found`}
           </p>
         </div>
-        
+
         <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
           {/* Batch Export Actions */}
           {selectedIds.length > 0 && (
@@ -387,8 +387,8 @@ export default function SimulationHistory({
             <div className="text-center py-12">
               <p className="text-lg text-muted-foreground mb-2">No simulations found</p>
               <p className="text-sm text-muted-foreground">
-                {searchTerm || statusFilter !== "all" 
-                  ? "Try adjusting your search criteria" 
+                {searchTerm || statusFilter !== "all"
+                  ? "Try adjusting your search criteria"
                   : "Create your first simulation to get started"
                 }
               </p>
@@ -444,7 +444,7 @@ export default function SimulationHistory({
                     </div>
                     <div className={`w-2 h-2 rounded-full ${status.color} ml-2 mt-2`} />
                   </div>
-                  
+
                   <div className="flex items-center justify-between ml-6">
                     <Badge variant="outline" className="text-xs">
                       {status.label}
@@ -506,7 +506,7 @@ export default function SimulationHistory({
                             <span>Export</span>
                             <LuChevronDown className="h-3 w-3" />
                           </Button>
-                          
+
                           {/* Dropdown Menu */}
                           <div className="absolute right-0 top-full mt-1 w-36 bg-white border rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
                             <button
@@ -587,7 +587,7 @@ export default function SimulationHistory({
               <div className="text-sm text-muted-foreground">
                 Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1} to {Math.min(currentPage * ITEMS_PER_PAGE, totalSimulations)} of {totalSimulations} simulations
               </div>
-              
+
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
@@ -597,7 +597,7 @@ export default function SimulationHistory({
                 >
                   Previous
                 </Button>
-                
+
                 <div className="flex items-center space-x-1">
                   {Array.from({ length: Math.min(5, totalSimulations) }, (_, i) => {
                     const pageNum = i + 1;
@@ -627,7 +627,7 @@ export default function SimulationHistory({
                     </>
                   )}
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -652,4 +652,4 @@ export default function SimulationHistory({
       />
     </div>
   );
-} 
+}
