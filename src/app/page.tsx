@@ -85,7 +85,7 @@ const generateSampleBacteria = (response: ApiResponse): Bacterium[] => {
   const bacteriaObj = response.simulation.currentState.bacteria;
   const seenIds = new Set<string>();
 
-  console.log('Halo:', bacteriaObj);
+  // console.log('Halo:', bacteriaObj);
 
   for (let i = 0; i < bacteriaObj.length; i++) {
     const bacterium: Bacterium = bacteriaObj[i];
@@ -99,9 +99,10 @@ const generateSampleBacteria = (response: ApiResponse): Bacterium[] => {
     sampleBacteria.push(bacterium);
   }
 
-  console.log(sampleBacteria);
+  // console.log(sampleBacteria);
   return sampleBacteria;
 };
+
 export default function Dashboard() {
   // Use the simulation context instead of the direct hook
   const {
@@ -202,9 +203,15 @@ export default function Dashboard() {
         const response = await simulationApiSimple.createSimulation(simulationName, parameters) as unknown as ApiResponse;
         console.log("Ini dari memoized itu lho: ", response);
         id = response.simulation.id;
+        console.log("New id setelah response : ", id);
         // Update petri dish
-        setSampleBacteria(generateSampleBacteria(response));
-        setSimulation(response.simulation);
+
+        setSampleBacteria([]);
+        setTimeout(() => {
+          setSampleBacteria(generateSampleBacteria(response));
+          setSimulation(response.simulation);
+        }, 100);
+
         console.log("New id : ",id);
 
         if (id) {
