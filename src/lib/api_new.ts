@@ -3,7 +3,7 @@ import { SimulationParametersInput, Simulation } from "@/types/simulation";
 
 // Configuration constants
 const API_BASE_URL =
-    "https://playful-gumption-deb939.netlify.app/api";
+    "https://kds-be-pz5y.onrender.com/api";
 const DEFAULT_TIMEOUT = 10000; // 10 seconds
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second base delay
